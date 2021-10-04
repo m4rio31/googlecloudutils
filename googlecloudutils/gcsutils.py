@@ -48,7 +48,7 @@ class GCSUtils:
             print(f'ERROR create_empty_directory -> {err}')
         return True
 
-    def delete_from_bucket(self, file_path) -> bool:
+    def delete(self, file_path) -> bool:
         '''
             Delete element from bucket.
         '''
@@ -72,21 +72,21 @@ class GCSUtils:
             names_list.append(blob_name)
         return names_list
 
-    def get_csv_from_bucket(self, path) -> pd.core.frame.DataFrame:
+    def get_csv(self, path) -> pd.core.frame.DataFrame:
         '''
             Download CSV file from bucket storing it into a Pandas DataFrame
         '''
         df = pd.read_csv(self.__download_bytes(path))
         return df
 
-    def get_json_from_bucket(self, path) -> dict:
+    def get_json(self, path) -> dict:
         '''
             Download JSON file from bucket
         '''
         json_file = json.loads(self.__download_string(path))
         return json_file
         
-    def save_to_bucket(self, blob_path, source, data_type=None) -> bool:
+    def save(self, blob_path, source, data_type=None) -> bool:
         '''
             Save data to bucket.
             It is possible to select among csv, json, string format or even a file.
