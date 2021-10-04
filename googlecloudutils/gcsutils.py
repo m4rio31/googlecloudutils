@@ -1,30 +1,28 @@
 import json
 import os
 import pandas as pd
-from io import BytesIO, StringIO
+from io import BytesIO
+
 from google.cloud import storage
 
 
-    
 class GCSUtils:
     """
     WARNING: This is a common class. If you modify this file copy it wherever it is used.
     """
-    AUTH_FILE = os.getenv('AUTH_FILE')
-    BUCKET_NAME = os.getenv('BUCKET_NAME')
 
-    def __init__(self, container_name):
-        self.__auth_file = GCSUtils.AUTH_FILE
-        self.__client = storage.Client.from_service_account(self.__auth_file)
-        self.__bucket_name = GCSUtils.BUCKET_NAME
+    def __init__(self, bucket_name, service_account=None):
+        if service_account:
+            self.__service_account = service_account
+            self.__client = storage.Client.from_service_account(self.__service_account)
+        else:
+            self.__client = storage.Client()
+        self.__bucket_name = bucket_name
         self.__bucket = self.__client.get_bucket(self.__bucket_name)
 
         if not self.__bucket_name:
             raise ValueError("missing 'bucket_name' variable")
 
-    @property
-    def auth_file(self):
-        return self.__auth_file
     @property
     def bucket_name(self):
         return self.__bucket_name
@@ -35,9 +33,10 @@ class GCSUtils:
     # ------------------------
     #     Public Methods
     # ------------------------
-
     def create_empty_directory(self, path) -> bool:
-        '''Create empty directory in bucket'''
+        '''
+            Create empty directory in bucket.
+        '''
         if not path.endswith("/"):
             # self.logger.error(traceback.format_exc(), extra=correlation)
             raise ValueError("Directory must ends with trailing slash. actual: ", path)
@@ -50,17 +49,22 @@ class GCSUtils:
         return True
 
     def delete_from_bucket(self, file_path) -> bool:
+        '''
+            Delete element from bucket.
+        '''
         blob = self.__bucket.blob(file_path)
         try:
             blob.delete()
-        except Error as err:
+        except Exception as err:
             print(f'ERROR delete_from_bucket -> {err}')
             return False
         return True
 
     def explore_bucket(self, prefix=None) -> list:
-        '''Create a list of elements in the bucket.
-           It is possible to choose a common prefix to filter the elements'''
+        '''
+            Create a list of elements in the bucket.
+            It is possible to choose a common prefix to filter the elements.
+        '''
         names_list = []
         blobs = self.__bucket.list_blobs(prefix=prefix)
         for elem in blobs:
@@ -69,18 +73,24 @@ class GCSUtils:
         return names_list
 
     def get_csv_from_bucket(self, path) -> pd.core.frame.DataFrame:
-        '''Download CSV file from bucket storing it into a Pandas DataFrame'''
+        '''
+            Download CSV file from bucket storing it into a Pandas DataFrame
+        '''
         df = pd.read_csv(self.__download_bytes(path))
         return df
 
     def get_json_from_bucket(self, path) -> dict:
-        '''Download JSON file from bucket'''
+        '''
+            Download JSON file from bucket
+        '''
         json_file = json.loads(self.__download_string(path))
         return json_file
         
     def save_to_bucket(self, blob_path, source, data_type=None) -> bool:
-        '''Save data to bucket.
-           It is possible to select among csv, json, string format or even a file.'''
+        '''
+            Save data to bucket.
+            It is possible to select among csv, json, string format or even a file.
+        '''
         try:
             if data_type == 'csv':
                 if isinstance(source, pd.core.frame.DataFrame):
