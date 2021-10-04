@@ -12,7 +12,7 @@ class IllegalLogSeverity(Exception):
         pass
 
 class CloudLogger:
-    __LOGGER_NAME = 'logging'
+    __LOGGER_NAME = 'CloudLogger'
     SEVERITIES = ['DEBUG', 'INFO', 'ERROR']
 
     def __init__(self, application_name, company_code='GENERALI',

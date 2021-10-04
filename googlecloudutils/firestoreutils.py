@@ -4,7 +4,6 @@ from google.cloud import firestore
 
 
 class FirestoreUtils:
-
     def __init__(self, service_account=None):
         if service_account:
             self.__service_account = service_account
@@ -39,8 +38,6 @@ class FirestoreUtils:
         new_message = FirestoreUtils.__get_json(collection_fields, message)
         now = datetime.datetime.now()
         new_message["write_date"] = now
-
-        # if date_input:
         new_message["date_input"] = now
 
         doc_id = ""
